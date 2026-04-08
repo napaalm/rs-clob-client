@@ -161,6 +161,11 @@ pub struct LastTradePrice {
     pub asset_id: U256,
     /// Market condition ID
     pub market: B256,
+    /// On-chain transaction hash for the settled trade when provided by the
+    /// public market WebSocket.
+    #[serde_as(as = "NoneAsEmptyString")]
+    #[serde(default)]
+    pub transaction_hash: Option<B256>,
     /// Last trade price
     pub price: Decimal,
     /// Side of the last trade
@@ -865,6 +870,7 @@ mod tests {
             "price": "0.456",
             "side": "BUY",
             "size": "219.217767",
+            "transaction_hash": "0xa10bedf9bfd9ab9d746ae8efde65548976841c66ee999dfd235916479b56eea6",
             "timestamp": "1750428146322"
         }"#;
 
@@ -875,6 +881,15 @@ mod tests {
                 assert_eq!(ltp.size, Some(dec!(219.217767)));
                 assert_eq!(ltp.fee_rate_bps, Some(Decimal::ZERO));
                 assert_eq!(ltp.side, Some(Side::Buy));
+                assert_eq!(
+                    ltp.transaction_hash,
+                    Some(
+                        B256::from_str(
+                            "0xa10bedf9bfd9ab9d746ae8efde65548976841c66ee999dfd235916479b56eea6"
+                        )
+                        .unwrap()
+                    )
+                );
             }
             _ => panic!("Expected LastTradePrice message"),
         }
@@ -985,6 +1000,7 @@ mod tests {
                 assert!(ltp.size.is_none());
                 assert!(ltp.fee_rate_bps.is_none());
                 assert!(ltp.side.is_none());
+                assert!(ltp.transaction_hash.is_none());
             }
             _ => panic!("Expected LastTradePrice message"),
         }
